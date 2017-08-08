@@ -128,7 +128,8 @@ def graphSimilarities(matches,personDict,propToShow = -1):
     plt.ylabel("Frequency")
     
 def makeDataForML(matches,skeptical):
-    fileName = "C:/Users/arinz/Desktop/2016-2017/Projects/PatientMatchingChallenge/FinalDataset.csv"
+    #fileName = "C:/Users/arinz/Desktop/2016-2017/Projects/PatientMatchingChallenge/FinalDataset.csv"
+    fileName = "C:/Users/aokeke/Documents/InterSystems/CacheEnsemble/PatientMatchingChallenge/FinalDataset-1.csv"
     badEntries,sameThing = pkl.load(open('filters2.p','rb'))
     print ("Loaing data",flush=True)
     personDict,valueCounter,personDict2 = PM.loadData(fileName,badEntries,sameThing)
@@ -173,6 +174,7 @@ def makeDataForML(matches,skeptical):
     #Perpare the samples
     ratioVec = np.vectorize(L.ratio)
     
+    reference = {'test':{},'train':{},'val':{}}
     
     numTestVal = int(len(positives)/4)
     numTrain = len(positives) - 2*numTestVal
@@ -186,64 +188,73 @@ def makeDataForML(matches,skeptical):
     #Test Set
     print ("Making test set",flush=True)
     testLabels = []
-    i = 0
+    ind = 0
     for i in range(numTestVal):
         p = positives.pop()
         info1 = personDict2['EnterpriseID'][p[0]]
         info2 = personDict2['EnterpriseID'][p[1]]
         vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
-        testSet[i,:] = vec
+        testSet[ind,:] = vec
         testLabels.append(1)
-        i += 1
-        for j in range(max(int(numTestVal2/numTestVal),1)):
-            p = negatives.pop()
-            info1 = personDict2['EnterpriseID'][p[0]]
-            info2 = personDict2['EnterpriseID'][p[1]]
-            vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
-            testSet[i,:] = vec
-            testLabels.append(-1)
-            i += 1
+        reference['test'][ind] = [info1,info2]
+        ind += 1
+    for j in range(numTestVal+numTestVal2-len(testLabels)):
+        p = negatives.pop()
+        info1 = personDict2['EnterpriseID'][p[0]]
+        info2 = personDict2['EnterpriseID'][p[1]]
+        vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
+        testSet[ind,:] = vec
+        testLabels.append(-1)
+        reference['test'][ind] = [info1,info2]
+        ind += 1
     #Validation Set
     print ("Making validation set",flush=True)
     valLabels = []
-    i = 0
+    ind = 0
     for i in range(numTestVal):
         p = positives.pop()
         info1 = personDict2['EnterpriseID'][p[0]]
         info2 = personDict2['EnterpriseID'][p[1]]
         vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
-        valSet[i,:] = vec
+        valSet[ind,:] = vec
         valLabels.append(1)
-        i += 1
-        for j in range(max(int(numTestVal2/numTestVal),1)):
-            p = negatives.pop()
-            info1 = personDict2['EnterpriseID'][p[0]]
-            info2 = personDict2['EnterpriseID'][p[1]]
-            vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
-            valSet[i,:] = vec
-            valLabels.append(-1)
-            i += 1
-    #Test Set
+        reference['val'][ind] = [info1,info2]
+        ind += 1
+    for j in range(numTestVal+numTestVal2-len(valLabels)):
+        p = negatives.pop()
+        info1 = personDict2['EnterpriseID'][p[0]]
+        info2 = personDict2['EnterpriseID'][p[1]]
+        vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
+        valSet[ind,:] = vec
+        valLabels.append(-1)
+        reference['val'][ind] = [info1,info2]
+        ind += 1
+    #Training Set
     print ("Making training set",flush=True)
     trainLabels = []
-    i = 0
-    for i in range(numTestVal):
+    ind = 0
+    for i in range(numTrain):
         p = positives.pop()
         info1 = personDict2['EnterpriseID'][p[0]]
         info2 = personDict2['EnterpriseID'][p[1]]
         vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
-        trainSet[i,:] = vec
+        trainSet[ind,:] = vec
         trainLabels.append(1)
-        i += 1
-        for j in range(max(int(numTrain2/numTrain),1)):
-            p = negatives.pop()
-            info1 = personDict2['EnterpriseID'][p[0]]
-            info2 = personDict2['EnterpriseID'][p[1]]
-            vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
-            trainSet[i,:] = vec
-            trainLabels.append(-1)
-            i += 1
-    dataToSave = ((trainSet,trainLabels),(valSet,valLabels),(testSet,testLabels))
+        reference['train'][ind] = [info1,info2]
+        ind += 1
+    for j in range(numTrain+numTrain2-len(trainLabels)):
+        p = negatives.pop()
+        info1 = personDict2['EnterpriseID'][p[0]]
+        info2 = personDict2['EnterpriseID'][p[1]]
+        vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
+        trainSet[ind,:] = vec
+        trainLabels.append(-1)
+        reference['train'][ind] = [info1,info2]
+        ind += 1
+        
+    print (trainSet.shape,valSet.shape,testSet.shape)
+    print (len(trainLabels),len(valLabels),len(testLabels))
+    dataToSave = ((trainSet,trainLabels),(valSet,valLabels),(testSet,testLabels),reference)
     output = open('MLdata.pkl', 'wb')
     pkl.dump(dataToSave,output)
     output.close()
@@ -276,13 +287,13 @@ def getWeightedScoreFromRatio(p,personDict,theta=np.ones((1,18)),theta_0=0):
     return (np.dot(theta,scoreVector)+theta_0)[0]
 if __name__=="__main__":
     pass
-    personDict = loadPeople()
-    
-    matches,skeptical = loadMatches(8)
+#    personDict = loadPeople()
+#    
+#    matches,skeptical = loadMatches(8)
 
-#    makeDataForML(matches,skeptical)
+    makeDataForML(matches,skeptical)
     
-    graphSimilarities(matches,personDict,propToShow=0)
+#    graphSimilarities(matches,personDict,propToShow=0)
 #    graphSimilarities(skeptical,personDict,propToShow=0)
     
 #    (matches1,skeptical1),(matches2,skeptical2) = findExclusiveBetweenTwoVers(7,8)
