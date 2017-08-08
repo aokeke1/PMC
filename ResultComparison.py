@@ -127,6 +127,55 @@ def graphSimilarities(matches,personDict,propToShow = -1):
     plt.xlabel("Score")
     plt.ylabel("Frequency")
     
+def graphSimilarities2(matches,skeptical,personDict,propToShow = -1):
+    """
+    Makes a histogram of property
+    """
+    #Get graph label
+    if propToShow<=0 or propToShow>18:
+        tag = "Overall Scores"
+        ratioVec = np.vectorize(L.ratio)
+    else:
+        tag = tags[propToShow] + " Scores"
+    
+    #Get Data
+    scores = []
+    for p in matches:
+        if propToShow<=0 or propToShow>18:
+            scoreVector = ratioVec(personDict[p[0]][1:],personDict[p[1]][1:])*(np.array(personDict[p[0]][1:])!='')
+            scores.append(np.sum(scoreVector))
+        else:
+            score = L.ratio(personDict[p[0]][propToShow],personDict[p[1]][propToShow])*(personDict[p[0]][propToShow]!='')
+            scores.append(score)
+    scores2 = []
+    for p in skeptical:
+        if propToShow<=0 or propToShow>18:
+            scoreVector = ratioVec(personDict[p[0]][1:],personDict[p[1]][1:])*(np.array(personDict[p[0]][1:])!='')
+            scores2.append(np.sum(scoreVector))
+        else:
+            score = L.ratio(personDict[p[0]][propToShow],personDict[p[1]][propToShow])*(personDict[p[0]][propToShow]!='')
+            scores2.append(score)
+    #Make Histograms
+    fig, ax1 = plt.subplots()
+    ax1.hist(scores, color='b', alpha=0.5)
+    ax1.set_xlabel('time (s)')
+    # Make the y-axis label, ticks and tick labels match the line color.
+    ax1.set_ylabel('matches', color='b')
+    ax1.tick_params('y', colors='b')
+    
+    ax2 = ax1.twinx()
+    ax2.hist(scores2, color='r', alpha=0.5)
+    ax2.set_ylabel('skeptical', color='r')
+    ax2.tick_params('y', colors='r')
+    
+    fig.tight_layout()
+    plt.show()
+
+#    plt.hist(scores)
+#    plt.title(tag)
+#    plt.xlabel("Score")
+#    plt.ylabel("Frequency")    
+    
 def makeDataForML(matches,skeptical):
     #fileName = "C:/Users/arinz/Desktop/2016-2017/Projects/PatientMatchingChallenge/FinalDataset.csv"
     fileName = "C:/Users/aokeke/Documents/InterSystems/CacheEnsemble/PatientMatchingChallenge/FinalDataset-1.csv"
@@ -287,14 +336,15 @@ def getWeightedScoreFromRatio(p,personDict,theta=np.ones((1,18)),theta_0=0):
     return (np.dot(theta,scoreVector)+theta_0)[0]
 if __name__=="__main__":
     pass
-    personDict = loadPeople()
-#    
-    matches,skeptical = loadMatches(8)
+#    personDict = loadPeople()
+##    
+#    matches,skeptical = loadMatches(9)
 
 #    makeDataForML(matches,skeptical)
     
-    graphSimilarities(matches,personDict,propToShow=0)
+#    graphSimilarities(matches,personDict,propToShow=0)
 #    graphSimilarities(skeptical,personDict,propToShow=0)
+    graphSimilarities2(matches,skeptical,personDict,propToShow=0)
     
 #    (matches1,skeptical1),(matches2,skeptical2) = findExclusiveBetweenTwoVers(7,8)
 

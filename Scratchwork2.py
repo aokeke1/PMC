@@ -192,6 +192,7 @@ def lookForMatchesFromMRN():
     highCutoff = 11
     lowCutoffa = 8
     lowCutoffb = 1.5
+    genderCutoff = 2.5
     personDict,MRNDict = loadPeople2()
     matches,skeptical = loadMatches(8)
     newMatches = {}
@@ -215,6 +216,9 @@ def lookForMatchesFromMRN():
                         continue
                     #Birthday too different
                     if info1[5]!='' and info2[5]!='' and L.distance(info1[5],info2[5])>1:
+                        continue
+                    #Differing genders
+                    if ((info1[4]=="M" and info2[4]=="F")or(info1[4]=="F" and info2[4]=="M")) and sum(ratioVec(info1[1:4],info2[1:4])*(np.array(info1[1:4])!=''))<genderCutoff:
                         continue
                     if score<lowCutoffa and sum(ratioVec(info1[1:4],info2[1:4])*(np.array(info1[1:4])!=''))<lowCutoffb:
                         continue

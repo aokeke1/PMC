@@ -19,7 +19,8 @@ def loadPeople():
     personDict = {}
     
     fileNames = ["FinalDataset-1.csv","FinalDataset-2.csv"]
-    ext = "C:/Users/aokeke/Documents/GITHUB/PMC/"
+#    ext = "C:/Users/aokeke/Documents/GITHUB/PMC/"
+    ext = "C:/Users/arinz/Desktop/2016-2017/Projects/PatientMatchingChallenge/PMC/"
     for name in fileNames:
         #Load matches
         
@@ -30,18 +31,19 @@ def loadPeople():
         for line in reader:
             if len(line)>0:
                 personDict[line[0]] = line
-        
+        myFile.close()
     return personDict
     
 def viewMissed():
-    personDict = loadPeople()
+    missed = set()
+#    personDict = loadPeople()
     fileName = "CACHETRM.LOG"
     
     myFile = open(fileName)
     
     for line in myFile:
         p = line.split(",")
-        print ("p: ",p)
+#        print ("p: ",p)
         if len(p)!=2:
             continue
         p[0] = p[0].replace("\n","")
@@ -50,15 +52,50 @@ def viewMissed():
         p[1] = p[1].replace("\n","")
         p[1] = p[1].replace("\x00","")
         p[1] = p[1].replace("ÿþ","")
-        print ("p: ",p)
+#        print ("p: ",p)
         k = tuple(sorted(p))
-        showInfo(k,personDict)
-        pause = input("continue? (y/n)")
-        if pause=="n":
-            break
-        
+        missed.add(k)
+#        showInfo(k,personDict)
+#        pause = input("continue? (y/n)")
+#        if pause=="n":
+#            break
+#        
     myFile.close()
+    return missed
+
+def loadMatches():
+    matched = {}
+    
+    fileName1 = "C:/Users/arinz/Desktop/2016-2017/Projects/PatientMatchingChallenge/PMC/MRNIDMatchesCutoff5.csv"
+
+    #Load matches
+    myFile = open(fileName1)
+    myFile.readline()
+    reader = csv.reader(myFile.read().split('\n'), delimiter=',')
+    for line in reader:
+        if len(line)>0:
+            matched[(line[0],line[1])] = float(line[2])
+        
+    return matched
+
+def compare(missed,matched):
+    personDict = loadPeople()
+    for p in missed:
+        if p in matched :
+            matched.pop(p)
+    print (len(matched),"remaining pairs missed")
+    pause = input("show? (y/n) ")
+    if pause=="y":
+        for p in matched:
+            showInfo(p,personDict)
+            pause = input("continue? (y/n)")
+            if pause=="n":
+                break
     return
 
 if __name__ == "__main__":
-    viewMissed()
+    pass
+    missed = viewMissed()
+    matched = loadMatches()
+    compare(missed,matched)
+#    missed = viewMissed()
