@@ -115,9 +115,11 @@ def graphSimilarities(matches,personDict,propToShow = -1):
     scores = []
     for p in matches:
         if propToShow<=0 or propToShow>18:
-            scores.append(np.sum(ratioVec(personDict[p[0]][1:],personDict[p[1]][1:])))
+            scoreVector = ratioVec(personDict[p[0]][1:],personDict[p[1]][1:])*(np.array(personDict[p[0]][1:])!='')
+            scores.append(np.sum(scoreVector))
         else:
-            scores.append(L.ratio(personDict[p[0]][propToShow],personDict[p[1]][propToShow]))
+            score = L.ratio(personDict[p[0]][propToShow],personDict[p[1]][propToShow])*(personDict[p[0]][propToShow]!='')
+            scores.append(score)
     
     #Make Histogram
     plt.hist(scores)
@@ -134,8 +136,7 @@ def makeDataForML(matches,skeptical):
     #Collect positives
     positives = set()
     for p in matches:
-        if (personDict['EnterpriseID'][p[0]][6]=="M" and personDict['EnterpriseID'][p[1]][6]=="F") or\
-           (personDict['EnterpriseID'][p[0]][6]=="F" and personDict['EnterpriseID'][p[1]][6]=="M"):
+        if personDict['EnterpriseID'][p[0]][6] != personDict['EnterpriseID'][p[1]][6]:
                continue
         else:
             positives.add(p)
@@ -190,7 +191,7 @@ def makeDataForML(matches,skeptical):
         p = positives.pop()
         info1 = personDict2['EnterpriseID'][p[0]]
         info2 = personDict2['EnterpriseID'][p[1]]
-        vec = ratioVec(info1[1:],info2[1:])
+        vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
         testSet[i,:] = vec
         testLabels.append(1)
         i += 1
@@ -198,7 +199,7 @@ def makeDataForML(matches,skeptical):
             p = negatives.pop()
             info1 = personDict2['EnterpriseID'][p[0]]
             info2 = personDict2['EnterpriseID'][p[1]]
-            vec = ratioVec(info1[1:],info2[1:])
+            vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
             testSet[i,:] = vec
             testLabels.append(-1)
             i += 1
@@ -210,7 +211,7 @@ def makeDataForML(matches,skeptical):
         p = positives.pop()
         info1 = personDict2['EnterpriseID'][p[0]]
         info2 = personDict2['EnterpriseID'][p[1]]
-        vec = ratioVec(info1[1:],info2[1:])
+        vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
         valSet[i,:] = vec
         valLabels.append(1)
         i += 1
@@ -218,7 +219,7 @@ def makeDataForML(matches,skeptical):
             p = negatives.pop()
             info1 = personDict2['EnterpriseID'][p[0]]
             info2 = personDict2['EnterpriseID'][p[1]]
-            vec = ratioVec(info1[1:],info2[1:])
+            vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
             valSet[i,:] = vec
             valLabels.append(-1)
             i += 1
@@ -230,7 +231,7 @@ def makeDataForML(matches,skeptical):
         p = positives.pop()
         info1 = personDict2['EnterpriseID'][p[0]]
         info2 = personDict2['EnterpriseID'][p[1]]
-        vec = ratioVec(info1[1:],info2[1:])
+        vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
         trainSet[i,:] = vec
         trainLabels.append(1)
         i += 1
@@ -238,7 +239,7 @@ def makeDataForML(matches,skeptical):
             p = negatives.pop()
             info1 = personDict2['EnterpriseID'][p[0]]
             info2 = personDict2['EnterpriseID'][p[1]]
-            vec = ratioVec(info1[1:],info2[1:])
+            vec = ratioVec(info1[1:],info2[1:])*(np.array(info1[1:])!='')
             trainSet[i,:] = vec
             trainLabels.append(-1)
             i += 1
@@ -246,15 +247,42 @@ def makeDataForML(matches,skeptical):
     output = open('MLdata.pkl', 'wb')
     pkl.dump(dataToSave,output)
     output.close()
+    
+def showSortedByScore(matches,personDict,shouldReverse=False):
+    newDict = {}
+    
+    for p in matches:
+        newDict[p] = getScoreFromRatio(p,personDict)
+    
+    sorted_x = sorted(newDict.items(), key=operator.itemgetter(1),reverse=not shouldReverse)
+    sorted_matches = []
+    for i in sorted_x:
+        sorted_matches.append(i[0])
+    
+    for p in sorted_matches:
+        showInfo(p,personDict,newDict[p])
+        
+        pause = input("continue? (y/n)")
+        if pause=="n":
+            return
+    
+def getScoreFromRatio(p,personDict):
+    ratioVec = np.vectorize(L.ratio)
+    scoreVector = ratioVec(personDict[p[0]][1:],personDict[p[1]][1:])*(np.array(personDict[p[0]][1:])!='')
+    return np.sum(scoreVector)
+def getWeightedScoreFromRatio(p,personDict,theta=np.ones((1,18)),theta_0=0):
+    ratioVec = np.vectorize(L.ratio)
+    scoreVector = ratioVec(personDict[p[0]][1:],personDict[p[1]][1:])*(np.array(personDict[p[0]][1:])!='')
+    return (np.dot(theta,scoreVector)+theta_0)[0]
 if __name__=="__main__":
     pass
-#    personDict = loadPeople()
-#    
-#    matches,skeptical = loadMatches(8)
-
-    makeDataForML(matches,skeptical)
+    personDict = loadPeople()
     
-#    graphSimilarities(matches,personDict,propToShow=0)
+    matches,skeptical = loadMatches(8)
+
+#    makeDataForML(matches,skeptical)
+    
+    graphSimilarities(matches,personDict,propToShow=0)
 #    graphSimilarities(skeptical,personDict,propToShow=0)
     
 #    (matches1,skeptical1),(matches2,skeptical2) = findExclusiveBetweenTwoVers(7,8)
