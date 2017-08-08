@@ -128,8 +128,9 @@ def graphSimilarities(matches,personDict,propToShow = -1):
 def makeDataForML(matches,skeptical):
     fileName = "C:/Users/arinz/Desktop/2016-2017/Projects/PatientMatchingChallenge/FinalDataset.csv"
     badEntries,sameThing = pkl.load(open('filters2.p','rb'))
+    print ("Loaing data",flush=True)
     personDict,valueCounter,personDict2 = PM.loadData(fileName,badEntries,sameThing)
-    
+    print ("Finished loading data",flush=True)
     #Collect positives
     positives = set()
     for p in matches:
@@ -138,6 +139,9 @@ def makeDataForML(matches,skeptical):
                continue
         else:
             positives.add(p)
+            
+            
+    print ("Number of positives: ",len(positives),flush=True)
     #Collect negatives
     negatives = set()
     negatives.update(skeptical)
@@ -146,7 +150,8 @@ def makeDataForML(matches,skeptical):
             continue
 
         dictConsidered = personDict[tags[i]]
-        if len(negatives)>=(1+(0.9/0.1))*len(positives):
+        print ("Tag: ",tags[i],"\nNumber of Negatives: ",len(negatives),flush=True)
+        if len(negatives)>=((1+(0.6/0.4))*len(positives)):
             break
         for duplicatedEntry in dictConsidered:
             if duplicatedEntry=="":
@@ -161,6 +166,8 @@ def makeDataForML(matches,skeptical):
                         score = PM.getScorePair(info1b,info2b)
                         if score<4:
                             negatives.add(k)
+                            if len(negatives)>=((1+(0.6/0.4))*len(positives)):
+                                break
     
     #Perpare the samples
     ratioVec = np.vectorize(L.ratio)
@@ -168,12 +175,15 @@ def makeDataForML(matches,skeptical):
     
     numTestVal = int(len(positives)/4)
     numTrain = len(positives) - 2*numTestVal
+    numTestVal2 = int(len(negatives)/4)
+    numTrain2 = len(negatives) - 2*numTestVal2
     
-    testSet = np.zeros((numTestVal,18))
-    valSet = np.zeros((numTestVal,18))
-    trainSet = np.zeros((numTrain,18))
+    testSet = np.zeros((numTestVal+numTestVal2,18))
+    valSet = np.zeros((numTestVal+numTestVal2,18))
+    trainSet = np.zeros((numTrain+numTrain2,18))
     
     #Test Set
+    print ("Making test set",flush=True)
     testLabels = []
     i = 0
     for i in range(numTestVal):
@@ -184,7 +194,7 @@ def makeDataForML(matches,skeptical):
         testSet[i,:] = vec
         testLabels.append(1)
         i += 1
-        for i in range(9):
+        for j in range(max(int(numTestVal2/numTestVal),1)):
             p = negatives.pop()
             info1 = personDict2['EnterpriseID'][p[0]]
             info2 = personDict2['EnterpriseID'][p[1]]
@@ -193,6 +203,7 @@ def makeDataForML(matches,skeptical):
             testLabels.append(-1)
             i += 1
     #Validation Set
+    print ("Making validation set",flush=True)
     valLabels = []
     i = 0
     for i in range(numTestVal):
@@ -203,7 +214,7 @@ def makeDataForML(matches,skeptical):
         valSet[i,:] = vec
         valLabels.append(1)
         i += 1
-        for i in range(9):
+        for j in range(max(int(numTestVal2/numTestVal),1)):
             p = negatives.pop()
             info1 = personDict2['EnterpriseID'][p[0]]
             info2 = personDict2['EnterpriseID'][p[1]]
@@ -212,6 +223,7 @@ def makeDataForML(matches,skeptical):
             valLabels.append(-1)
             i += 1
     #Test Set
+    print ("Making training set",flush=True)
     trainLabels = []
     i = 0
     for i in range(numTestVal):
@@ -222,7 +234,7 @@ def makeDataForML(matches,skeptical):
         trainSet[i,:] = vec
         trainLabels.append(1)
         i += 1
-        for i in range(9):
+        for j in range(max(int(numTrain2/numTrain),1)):
             p = negatives.pop()
             info1 = personDict2['EnterpriseID'][p[0]]
             info2 = personDict2['EnterpriseID'][p[1]]
@@ -235,9 +247,12 @@ def makeDataForML(matches,skeptical):
     pkl.dump(dataToSave,output)
     output.close()
 if __name__=="__main__":
+    pass
     personDict = loadPeople()
     
     matches,skeptical = loadMatches(8)
+
+#    makeDataForML(matches,skeptical)
     
 #    graphSimilarities(matches,personDict,propToShow=0)
 #    graphSimilarities(skeptical,personDict,propToShow=0)
