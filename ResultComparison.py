@@ -248,11 +248,11 @@ def makeDataForML(matches,skeptical):
     output.close()
 if __name__=="__main__":
     pass
-    personDict = loadPeople()
-    
-    matches,skeptical = loadMatches(8)
+#    personDict = loadPeople()
+#    
+#    matches,skeptical = loadMatches(8)
 
-#    makeDataForML(matches,skeptical)
+    makeDataForML(matches,skeptical)
     
 #    graphSimilarities(matches,personDict,propToShow=0)
 #    graphSimilarities(skeptical,personDict,propToShow=0)
