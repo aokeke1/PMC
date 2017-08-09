@@ -218,7 +218,7 @@ def lookForMatchesFromMRN():
                     if info1[5]!='' and info2[5]!='' and L.distance(info1[5],info2[5])>1:
                         continue
                     #Differing genders
-                    if ((info1[4]=="M" and info2[4]=="F")or(info1[4]=="F" and info2[4]=="M")) and sum(ratioVec(info1[1:4],info2[1:4])*(np.array(info1[1:4])!=''))<genderCutoff:
+                    if ((info1[6]=="M" and info2[6]=="F")or(info1[6]=="F" and info2[6]=="M")) and sum(ratioVec(info1[1:4],info2[1:4])*(np.array(info1[1:4])!=''))<genderCutoff:
                         continue
                     if score<lowCutoffa and sum(ratioVec(info1[1:4],info2[1:4])*(np.array(info1[1:4])!=''))<lowCutoffb:
                         continue
@@ -255,9 +255,9 @@ def saveMatches(matches,personDict,fileOutName1,fileOutName2):
             
 if __name__=="__main__":
     pass
-    personDict = loadPeople()
-#    
-    matches,skeptical = loadMatches(9)
+#    personDict = loadPeople()
+##    
+#    matches,skeptical = loadMatches(9)
 
 #    makeDataForML(matches,skeptical)
     
@@ -294,7 +294,13 @@ if __name__=="__main__":
 #        for pair in skeptical2:
 #            showInfo(pair,personDict,skeptical2[pair])
 #    newMatches = lookForMatchesFromMRN()
+    matches2 = {}
     for p in matches:
-        matches[p] = getScoreFromRatio(p,personDict)
-    outputs = ["OUTPUTS/IDMatchTablev9_1.csv","OUTPUTS/FullInfoMatchTablev9_1.csv"]
-    saveMatches(matches,personDict,outputs[0],outputs[1])
+        info1 = personDict[p[0]]
+        info2 = personDict[p[1]]
+        if ((info1[6]=="M" and info2[6]=="F")or(info1[6]=="F" and info2[6]=="M")) and L.distance(info1[2],info2[2])>1:
+            continue
+        matches2[p] = getScoreFromRatio(p,personDict)
+    print ("original: ",len(matches),"new: ",len(matches2))
+    outputs = ["OUTPUTS/IDMatchTablev10_1.csv","OUTPUTS/FullInfoMatchTablev10_1.csv"]
+    saveMatches(matches2,personDict,outputs[0],outputs[1])
