@@ -337,14 +337,14 @@ def getWeightedScoreFromRatio(p,personDict,theta=np.ones((1,18)),theta_0=0):
 if __name__=="__main__":
     pass
 #    personDict = loadPeople()
-##    
+#    
 #    matches,skeptical = loadMatches(9)
 
 #    makeDataForML(matches,skeptical)
     
 #    graphSimilarities(matches,personDict,propToShow=0)
 #    graphSimilarities(skeptical,personDict,propToShow=0)
-    graphSimilarities2(matches,skeptical,personDict,propToShow=0)
+#    graphSimilarities2(matches,skeptical,personDict,propToShow=0)
     
 #    (matches1,skeptical1),(matches2,skeptical2) = findExclusiveBetweenTwoVers(7,8)
 

@@ -255,9 +255,9 @@ def saveMatches(matches,personDict,fileOutName1,fileOutName2):
             
 if __name__=="__main__":
     pass
-#    personDict = loadPeople()
+    personDict = loadPeople()
 #    
-#    matches,skeptical = loadMatches(8)
+    matches,skeptical = loadMatches(9)
 
 #    makeDataForML(matches,skeptical)
     
@@ -293,4 +293,8 @@ if __name__=="__main__":
 #    if pause=="y":
 #        for pair in skeptical2:
 #            showInfo(pair,personDict,skeptical2[pair])
-    newMatches = lookForMatchesFromMRN()
+#    newMatches = lookForMatchesFromMRN()
+    for p in matches:
+        matches[p] = getScoreFromRatio(p,personDict)
+    outputs = ["OUTPUTS/IDMatchTablev9_1.csv","OUTPUTS/FullInfoMatchTablev9_1.csv"]
+    saveMatches(matches,personDict,outputs[0],outputs[1])
