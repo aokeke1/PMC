@@ -192,7 +192,7 @@ def lookForMatchesFromMRN():
     highCutoff = 11
     lowCutoffa = 8
     lowCutoffb = 1.5
-    genderCutoff = 2.5
+    genderCutoff = 2.1
     personDict,MRNDict = loadPeople2()
     matches,skeptical = loadMatches(8)
     newMatches = {}
@@ -293,14 +293,14 @@ if __name__=="__main__":
 #    if pause=="y":
 #        for pair in skeptical2:
 #            showInfo(pair,personDict,skeptical2[pair])
-#    newMatches = lookForMatchesFromMRN()
-    matches2 = {}
-    for p in matches:
-        info1 = personDict[p[0]]
-        info2 = personDict[p[1]]
-        if ((info1[6]=="M" and info2[6]=="F")or(info1[6]=="F" and info2[6]=="M")) and L.distance(info1[2],info2[2])>1:
-            continue
-        matches2[p] = getScoreFromRatio(p,personDict)
-    print ("original: ",len(matches),"new: ",len(matches2))
-    outputs = ["OUTPUTS/IDMatchTablev10_1.csv","OUTPUTS/FullInfoMatchTablev10_1.csv"]
-    saveMatches(matches2,personDict,outputs[0],outputs[1])
+    newMatches = lookForMatchesFromMRN()
+#    matches2 = {}
+#    for p in matches:
+#        info1 = personDict[p[0]]
+#        info2 = personDict[p[1]]
+#        if ((info1[6]=="M" and info2[6]=="F")or(info1[6]=="F" and info2[6]=="M")) and L.distance(info1[2],info2[2])>1:
+#            continue
+#        matches2[p] = getScoreFromRatio(p,personDict)
+#    print ("original: ",len(matches),"new: ",len(matches2))
+#    outputs = ["OUTPUTS/IDMatchTablev10_1.csv","OUTPUTS/FullInfoMatchTablev10_1.csv"]
+#    saveMatches(matches2,personDict,outputs[0],outputs[1])
